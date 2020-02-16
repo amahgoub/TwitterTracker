@@ -26,6 +26,8 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
+import helpers.Constants;
+
 /**
  * Provide access to the Twitter API by implementing the required OAuth flow
  *
@@ -41,9 +43,7 @@ public class TwitterAuthenticator {
     private HttpRequestFactory factory;
 
     private static final HttpTransport TRANSPORT = new NetHttpTransport();
-    private static final String AUTHORIZE_URL = "https://api.twitter.com/oauth/authorize";
-    private static final String ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token";
-    private static final String REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
+
 
     /**
      * Create a new TwitterAuthenticator
@@ -84,7 +84,7 @@ public class TwitterAuthenticator {
         OAuthCredentialsResponse requestTokenResponse = getTemporaryToken(signer);
         signer.tokenSharedSecret = requestTokenResponse.tokenSecret;
 
-        OAuthAuthorizeTemporaryTokenUrl authorizeUrl = new OAuthAuthorizeTemporaryTokenUrl(AUTHORIZE_URL);
+        OAuthAuthorizeTemporaryTokenUrl authorizeUrl = new OAuthAuthorizeTemporaryTokenUrl(Constants.AUTHORIZE_URL);
         authorizeUrl.temporaryToken = requestTokenResponse.token;
 
         String providedPin = retrievePin(authorizeUrl);
@@ -107,7 +107,7 @@ public class TwitterAuthenticator {
      * @return The response containing the temporary tokens
      */
     private OAuthCredentialsResponse getTemporaryToken(final OAuthHmacSigner signer) throws TwitterAuthenticationException {
-        OAuthGetTemporaryToken requestToken = new OAuthGetTemporaryToken(REQUEST_TOKEN_URL);
+        OAuthGetTemporaryToken requestToken = new OAuthGetTemporaryToken(Constants.REQUEST_TOKEN_URL);
         requestToken.consumerKey = consumerKey;
         requestToken.transport = TRANSPORT;
         requestToken.signer = signer;
@@ -119,7 +119,7 @@ public class TwitterAuthenticator {
             throw new TwitterAuthenticationException("Unable to aquire temporary token: " + e.getMessage(), e);
         }
 
-        out.println("Aquired temporary token...\n");
+        System.out.println("Aquired temporary token...\n");
 
         return requestTokenResponse;
     }
@@ -134,8 +134,8 @@ public class TwitterAuthenticator {
         String providedPin;
         Scanner scanner = new Scanner(System.in);
         try {
-            out.println("Go to the following link in your browser:\n" + authorizeUrl.build());
-            out.println("\nPlease enter the retrieved PIN:");
+            System.out.println("Go to the following link in your browser:\n" + authorizeUrl.build());
+            System.out.println("\nPlease enter the retrieved PIN:");
             providedPin = scanner.nextLine();
         } finally {
             scanner.close();
@@ -157,7 +157,7 @@ public class TwitterAuthenticator {
      * @return The access token that can be used to invoke Twitter APIs
      */
     private OAuthCredentialsResponse retrieveAccessTokens(final String providedPin, final OAuthHmacSigner signer, final String token) throws TwitterAuthenticationException {
-        OAuthGetAccessToken accessToken = new OAuthGetAccessToken(ACCESS_TOKEN_URL);
+        OAuthGetAccessToken accessToken = new OAuthGetAccessToken(Constants.ACCESS_TOKEN_URL);
         accessToken.verifier = providedPin;
         accessToken.consumerKey = consumerSecret;
         accessToken.signer = signer;
@@ -170,7 +170,7 @@ public class TwitterAuthenticator {
         } catch (IOException e) {
             throw new TwitterAuthenticationException("Unable to authorize access: " + e.getMessage(), e);
         }
-        out.println("\nAuthorization was successful");
+        System.out.println("\nAuthorization was successful");
 
         return accessTokenResponse;
     }
